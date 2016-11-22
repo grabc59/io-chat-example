@@ -1,0 +1,17 @@
+.container {
+  margin-top: 30px;
+}
+
+#messageHistory {
+  overflow: auto;
+  height: 300px;
+}
+
+#chat {
+  position: relative;
+  margin: auto;
+}
+
+#messageArea {
+  display: none;
+}
