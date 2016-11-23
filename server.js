@@ -46,7 +46,7 @@ io.sockets.on('connection', function(socket) {
     socket.username = data;
     users.push(socket.username);
     updateUsernames();
-
+    io.sockets.emit('new user notification', socket.username);
   });
 
   function updateUsernames() {
