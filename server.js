@@ -15,17 +15,21 @@ console.log('server running at http://localhost:3000');
 
 app.use(express.static(__dirname));
 
+// original get route
 // app.get('/', function(req, res){
 //   res.sendFile(__dirname + '/index.html');
 // });
 
 
 io.sockets.on('connection', function(socket) {
-  connections.push(socket);
-    console.log('Connected: %s sockets connected', connections.length);
-    console.log(connections.length);
 
-  //disconnect
+  // new connection
+  connections.push(socket);
+  // informational logs
+  console.log('Connected: %s sockets connected', connections.length);
+  console.log(connections.length);
+
+  // disconnect
   socket.on('disconnect', function(data) {
     if (!socket.username) return;
     users.splice(users.indexOf(socket.username), 1);
@@ -52,5 +56,14 @@ io.sockets.on('connection', function(socket) {
   function updateUsernames() {
     io.sockets.emit('get users', users);
   }
+
+  // 'someone is typing notification'
+  // client sends 'user is typing', with their username, to the server. The server will send 'someone is typing' and forward the received username to all clients in the chat
+  socket.on('user is typing', function (data) {
+    io.sockets.emit('someone is typing', data);
+  });
+  socket.on('user is not typing', function(data) {
+    io.sockets.emit('somone is not typing', data);
+  })
 
 });

@@ -3,7 +3,7 @@ $(function() {
     var socket = io.connect();
     var $messageForm = $('#messageForm');
     var $message = $('#message');
-    var $chat = $('#chat');
+    // var $chat = $('#chat');
     var $messageHistory = $('#messageHistory');
     var $messageArea = $('#messageArea');
     var $userFormArea = $('#userFormArea');
@@ -27,7 +27,7 @@ $(function() {
 
     socket.on('new user notification', function(data) {
         $messageHistory.append('<div class="well"><strong>' + data + '</strong> has joined the chat');
-    })
+    });
 
     $messageForm.submit(function(e) {
       e.preventDefault();
@@ -36,13 +36,14 @@ $(function() {
     });
 
     socket.on('new message', function(data) {
-        $messageHistory.append('<div class="well"><strong>' + data.user + '</strong>:' + data.msg + '</div>')
-    })
+        $messageHistory.append('<div class="well"><strong>' + data.user + '</strong>:' + data.msg + '</div>');
+    });
 
+    // populate 'online users'
     socket.on('get users', function(data){
       var html = '';
       for (var i = 0; i < data.length; i++) {
-
+        // highlight the users's username
         if (data[i] === $myUserName) {
           html += '<li class="list-group-item active">' + data[i] + '</li>';
         } else {
@@ -50,8 +51,22 @@ $(function() {
         }
       }
       $users.html(html);
-    })
+    });
 
+    // "'user' is typing" notification, send my username to the server
+    $message.keydown(function() {
+      socket.emit('user is typing', $myUserName);
+    });
+    $message.keyup(function() {
+      socket.emit('user is not typing', $myUserName);
+    });
+    socket.on('someone is typing', function(data) {
+      var html = '';
+      html += data + 'is typing';
+      // $messageHistory.html(html);
+      // $messageHistory.appendChild(html)
+    });
+    socket.on('someone is not typing', function(data) {
 
-
+    });
 });
