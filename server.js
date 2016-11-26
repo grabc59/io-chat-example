@@ -57,13 +57,10 @@ io.sockets.on('connection', function(socket) {
     io.sockets.emit('get users', users);
   }
 
-  // 'someone is typing notification'
-  // client sends 'user is typing', with their username, to the server. The server will send 'someone is typing' and forward the received username to all clients in the chat
-  socket.on('user is typing', function (data) {
-    io.sockets.emit('someone is typing', data);
+  socket.on("typing", function(data) {
+    io.sockets.emit('isTyping', {
+      isTyping: data,
+      person: socket.username,
+    });
   });
-  socket.on('user is not typing', function(data) {
-    io.sockets.emit('somone is not typing', data);
-  })
-
 });

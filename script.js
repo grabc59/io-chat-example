@@ -11,6 +11,9 @@ $(function() {
     var $users = $('#users');
     var $username = $('#username');
     var $myUserName = '';
+    var typing = false;
+    var timeout;
+
 
 
     $userForm.submit(function(e) {
@@ -33,11 +36,17 @@ $(function() {
       e.preventDefault();
       socket.emit('send message', $message.val());
       $message.val('');
+      // when a message is submitted, clear the 'typing' timeout
+      clearTimeout(timeout);
+      timeout = setTimeout(timeoutFunction, 0);
     });
 
+
     socket.on('new message', function(data) {
-        $messageHistory.append('<div class="well"><strong>' + data.user + '</strong>:' + data.msg + '</div>');
+      // add the message to the message box
+      $messageHistory.append('<div class="well"><strong>' + data.user + '</strong>:' + data.msg + '</div>');
     });
+
 
     // populate 'online users'
     socket.on('get users', function(data){
@@ -53,20 +62,33 @@ $(function() {
       $users.html(html);
     });
 
-    // "'user' is typing" notification, send my username to the server
-    $message.keydown(function() {
-      socket.emit('user is typing', $myUserName);
-    });
-    $message.keyup(function() {
-      socket.emit('user is not typing', $myUserName);
-    });
-    socket.on('someone is typing', function(data) {
-      var html = '';
-      html += data + 'is typing';
-      // $messageHistory.html(html);
-      // $messageHistory.appendChild(html)
-    });
-    socket.on('someone is not typing', function(data) {
 
+
+    // "'user' is typing" notification, send my username to the server
+    function timeoutFunction() {
+      typing = false;
+      socket.emit("typing", false);
+    }
+    $message.keypress(function(e) {
+      if (e.which !== 13) {
+        if (typing === false && $message.is(":focus")) {
+          typing = true;
+          socket.emit("typing", true);
+        } else {
+          clearTimeout(timeout);
+          timeout = setTimeout(timeoutFunction, 5000);
+        }
+      }
+    });
+
+    socket.on('isTyping', function(data) {
+      if (data.isTyping) {
+        if ($('#' + data.person + '').length === 0) {
+          $("#updates").append("<li id='" + data.person + "'><span class='text-muted'><small><i class='fa fa-keyboard-o'></i>" + data.person + " is typing.</small></li>");
+          timeout = setTimeout(timeoutFunction, 5000);
+        }
+      } else {
+        $("#" + data.person + "").remove();
+      }
     });
 });

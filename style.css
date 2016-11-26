@@ -22,3 +22,7 @@ body {
 #messageArea {
   display: none;
 }
+
+#updates {
+  min-height: 20px;
+}
